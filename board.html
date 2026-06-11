@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Design Shotgun — Comparison Board | CustomerOS Onboarding Wizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0A0F1A;
+    --surface: #111827;
+    --surface-2: #1F2937;
+    --border: rgba(255,255,255,.08);
+    --border-strong: rgba(255,255,255,.15);
+    --text: #F9FAFB;
+    --text-dim: #9CA3AF;
+    --text-muted: #4B5563;
+    --a-color: #60A5FA;
+    --b-color: #A78BFA;
+    --c-color: #34D399;
+    --rec-color: #F59E0B;
+    --radius: 10px;
+    --shadow: 0 4px 24px rgba(0,0,0,.5);
+  }
+
+  html, body {
+    min-height: 100%;
+    font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 32px 36px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    margin-bottom: 4px;
+  }
+
+  .header-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .recommendation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245,158,11,.12);
+    border: 1px solid rgba(245,158,11,.3);
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: var(--rec-color);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ── Score table ── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  .scores-wrap { padding: 24px 36px; border-bottom: 1px solid var(--border); }
+
+  .score-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .score-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .score-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .score-table td:first-child {
+    font-weight: 500;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+
+  .score-table tr:last-child td { border-bottom: none; }
+
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 22px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .score-5 { background: rgba(16,185,129,.18); color: #34D399; }
+  .score-4 { background: rgba(96,165,250,.15); color: #93C5FD; }
+  .score-3 { background: rgba(251,191,36,.12); color: #FCD34D; }
+  .score-2 { background: rgba(239,68,68,.12); color: #FCA5A5; }
+
+  .variant-head-a { color: var(--a-color); }
+  .variant-head-b { color: var(--b-color); }
+  .variant-head-c { color: var(--c-color); }
+
+  /* ── Head-to-head ── */
+  .h2h-wrap { padding: 24px 36px; border-bottom: 1px solid var(--border); }
+
+  .h2h-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .h2h-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+
+  .h2h-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .variant-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-a { background: var(--a-color); }
+  .dot-b { background: var(--b-color); }
+  .dot-c { background: var(--c-color); }
+
+  .h2h-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .h2h-row:last-child { margin-bottom: 0; }
+
+  .h2h-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
+  .h2h-text {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Noto Sans Thai', sans-serif;
+    line-height: 1.55;
+  }
+
+  .h2h-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+  }
+
+  /* ── Tradeoff table ── */
+  .tradeoff-wrap { padding: 24px 36px; border-bottom: 1px solid var(--border); }
+
+  .tradeoff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .tradeoff-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .tradeoff-table td {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Noto Sans Thai', sans-serif;
+    vertical-align: top;
+  }
+
+  .tradeoff-table td:first-child {
+    font-weight: 500;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    background: var(--surface);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tag-s { background: rgba(16,185,129,.15); color: #34D399; }
+  .tag-m { background: rgba(245,158,11,.15); color: #FCD34D; }
+  .tag-l { background: rgba(239,68,68,.15); color: #FCA5A5; }
+  .tag-yes { background: rgba(16,185,129,.12); color: #34D399; }
+  .tag-deferred { background: rgba(245,158,11,.12); color: #FCD34D; }
+  .tag-no { background: rgba(239,68,68,.12); color: #FCA5A5; }
+
+  /* ── Decision notes ── */
+  .notes-wrap { padding: 24px 36px; border-bottom: 1px solid var(--border); }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .note-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+
+  .note-card h4 {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .note-card p {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Noto Sans Thai', sans-serif;
+    line-height: 1.7;
+  }
+
+  .rec-card {
+    background: rgba(245,158,11,.07);
+    border-color: rgba(245,158,11,.25);
+    grid-column: 1 / -1;
+  }
+
+  /* ── Preview iframes ── */
+  .previews-wrap { padding: 24px 36px; }
+
+  .previews-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .preview-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px;
+  }
+
+  .preview-toggle button {
+    height: 30px;
+    padding: 0 12px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+    white-space: nowrap;
+  }
+
+  .preview-toggle button.active {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  .preview-toggle button:hover:not(.active) { color: var(--text-dim); }
+  .preview-toggle button:focus-visible { outline: 2px solid #60A5FA; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preview-toggle button { transition: none; }
+  }
+
+  .iframes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .iframe-col { display: flex; flex-direction: column; }
+
+  .iframe-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .iframe-label-text {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .iframe-sublabel {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .iframe-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+    flex: 1;
+    position: relative;
+  }
+
+  iframe {
+    width: 100%;
+    height: 700px;
+    border: none;
+    display: block;
+  }
+
+  .open-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    transition: color 0.1s;
+  }
+
+  .open-link:hover { color: var(--text-dim); }
+  .open-link:focus-visible { outline: 2px solid #60A5FA; border-radius: 2px; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .iframes-grid { grid-template-columns: 1fr; }
+    iframe { height: 600px; }
+    .h2h-grid { grid-template-columns: 1fr; }
+    .notes-grid { grid-template-columns: 1fr; }
+    .tradeoff-table { font-size: 11px; }
+  }
+
+  @media (max-width: 600px) {
+    .header { padding: 20px 16px 16px; }
+    .scores-wrap, .h2h-wrap, .tradeoff-wrap, .notes-wrap, .previews-wrap { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-left">
+    <h1>Onboarding Wizard — Design Shotgun</h1>
+    <div class="header-meta">
+      <span>📅 2026-06-11</span>
+      <span>🎯 CustomerOS — สร้างบอทแรกหลัง Signup</span>
+      <span>👤 SME Owner, Thai-first, non-technical</span>
+      <span>🗂 3 variants generated</span>
+    </div>
+  </div>
+  <div class="recommendation-badge">
+    ⭐ Recommendation: Variant B (with A as fallback)
+  </div>
+</header>
+
+<!-- ── Self-critique Scores ── -->
+<section class="scores-wrap">
+  <div class="section-title">Pre-present self-critique scores (1–5)</div>
+  <table class="score-table">
+    <thead>
+      <tr>
+        <th>Criterion</th>
+        <th class="variant-head-a">A — Calm Guided Stepper</th>
+        <th class="variant-head-b">B — Conversational Chat</th>
+        <th class="variant-head-c">C — Split-Screen Console</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Philosophy (clear WHY)</td>
+        <td><span class="score-pill score-4">4</span> — Trust via structure; one thing at a time reduces overwhelm for nervous SME owners</td>
+        <td><span class="score-pill score-5">5</span> — Mirrors the product itself; sets up AIda as the assistant they'll keep using; bot-first matches activation goal</td>
+        <td><span class="score-pill score-4">4</span> — Power users want to see everything; validates that the tool has depth before committing</td>
+      </tr>
+      <tr>
+        <td>Hierarchy (primary action obvious in 2s)</td>
+        <td><span class="score-pill score-5">5</span> — Single CTA per screen, large type, clear progress</td>
+        <td><span class="score-pill score-4">4</span> — Chips are clear but multiple options compete; mitigated by AIda framing</td>
+        <td><span class="score-pill score-3">3</span> — Two panels, multiple fields, collapsible — requires scanning; experienced users handle this, first-timers may not</td>
+      </tr>
+      <tr>
+        <td>Execution (craft quality)</td>
+        <td><span class="score-pill score-5">5</span> — Clean B2B SaaS polish, well-spaced, clear states</td>
+        <td><span class="score-pill score-5">5</span> — Warm bubble typography, chip states, LINE card embed, skip-notice all executed</td>
+        <td><span class="score-pill score-5">5</span> — Dark shell, tab panel, live phone mockup, collapsible LINE banner, interactive send</td>
+      </tr>
+      <tr>
+        <td>Specificity (looks like THIS brief)</td>
+        <td><span class="score-pill score-4">4</span> — Thai copy, Noto Sans, webhook URL, LINE friction callout all present</td>
+        <td><span class="score-pill score-5">5</span> — AIda persona, "เชื่อมทีหลัง" skip, LINE card embed, mini-LINE preview are all specific to this exact product</td>
+        <td><span class="score-pill score-5">5</span> — Dark CRM console feel matches the operator tool positioning; phone mockup inside a config panel is distinctive</td>
+      </tr>
+      <tr>
+        <td>Restraint (no clutter)</td>
+        <td><span class="score-pill score-5">5</span> — Minimal color, generous whitespace</td>
+        <td><span class="score-pill score-4">4</span> — Bottom bar + demo nav adds chrome, but justified in prototype</td>
+        <td><span class="score-pill score-3">3</span> — Three tabs + collapsible + topbar actions are a lot; acceptable for target (power operator) but borderline</td>
+      </tr>
+      <tr>
+        <td>Variety (structural distance from siblings)</td>
+        <td><span class="score-pill score-5">5</span> — Fixed rail + white content area vs. centered chat vs. dark split-screen: maximum structural distance</td>
+        <td><span class="score-pill score-5">5</span> — Centered column chat bubbles, purple palette, bottom input bar — nothing like A or C</td>
+        <td><span class="score-pill score-5">5</span> — Dark navy shell, two panels side-by-side, no progress rail, no chat bubbles — completely different macro layout</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Head-to-head ── -->
+<section class="h2h-wrap">
+  <div class="section-title">Head-to-head</div>
+  <div class="h2h-grid">
+    <div class="h2h-card">
+      <div class="h2h-card-title">
+        <div class="variant-dot dot-a"></div>
+        <span class="variant-head-a">A — Calm Guided Stepper</span>
+      </div>
+      <div class="h2h-row">
+        <div class="h2h-icon">💪</div>
+        <div>
+          <div class="h2h-label">Strengths</div>
+          <div class="h2h-text">ลดความวิตกของ SME non-technical ได้ดีที่สุด — หนึ่งงานต่อหน้าจอ ไม่ overload. Progress rail โปร่งใส. รูปแบบ B2B ที่คุ้นเคย — ไม่ต้องเรียนรู้วิธีใช้ UI. เส้นทาง channel-first ตรงกับ data model ปัจจุบัน — build cost ต่ำที่สุด.</div>
+        </div>
+      </div>
+      <div class="h2h-row">
+        <div class="h2h-icon">⚠️</div>
+        <div>
+          <div class="h2h-label">Weaknesses</div>
+          <div class="h2h-text">LINE token friction เกิดขึ้นที่ step 2 — ผู้ใช้ต้องออกไป LINE Developer Console ก่อนจะเห็นบอทของตัวเอง ทำให้ drop-off สูงก่อนถึง "aha moment". ไม่มี live preview ระหว่างตั้งค่า</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h2h-card">
+      <div class="h2h-card-title">
+        <div class="variant-dot dot-b"></div>
+        <span class="variant-head-b">B — Conversational Setup Chat</span>
+      </div>
+      <div class="h2h-row">
+        <div class="h2h-icon">💪</div>
+        <div>
+          <div class="h2h-label">Strengths</div>
+          <div class="h2h-text">Bot-first flow — ผู้ใช้เห็น mini-preview บอทตัวเองก่อนถูกขอ token. "เชื่อมทีหลัง" skip สำคัญมาก — activation path ไม่บล็อกที่ LINE friction. AIda persona สร้าง narrative ที่จดจำได้. รูปแบบ chat ลดความรู้สึก "ฟอร์มราชการ".</div>
+        </div>
+      </div>
+      <div class="h2h-row">
+        <div class="h2h-icon">⚠️</div>
+        <div>
+          <div class="h2h-label">Weaknesses</div>
+          <div class="h2h-text">Bot-first ต้องการ model change (decouple bot จาก LINE OA). Build cost สูงกว่า A. Conversational UI แปลกสำหรับ setup flow บางคน — อาจคิดว่า "กำลังคุยกับ AI" ไม่ใช่ "กำลัง configure".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h2h-card">
+      <div class="h2h-card-title">
+        <div class="variant-dot dot-c"></div>
+        <span class="variant-head-c">C — Split-Screen Console</span>
+      </div>
+      <div class="h2h-row">
+        <div class="h2h-icon">💪</div>
+        <div>
+          <div class="h2h-label">Strengths</div>
+          <div class="h2h-text">ผู้ใช้ที่เป็น operator จะรู้สึกว่า tool นี้มี depth และ professional. Live phone preview ทำให้เห็น real-time feedback ขณะ configure. ทุก config ในที่เดียว — power users ไม่ต้องคลิกหลายหน้า.</div>
+        </div>
+      </div>
+      <div class="h2h-row">
+        <div class="h2h-icon">⚠️</div>
+        <div>
+          <div class="h2h-label">Weaknesses</div>
+          <div class="h2h-text">Non-technical SME ที่เพิ่ง signup จะมีความสับสนสูง — ไม่มี guided path. Dark console UI อาจรู้สึก "ยาก" สำหรับ target audience หลัก. Build cost สูงที่สุด (split-screen responsive + live test infra).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Tradeoff table ── -->
+<section class="tradeoff-wrap">
+  <div class="section-title">Tradeoff comparison</div>
+  <table class="tradeoff-table">
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th class="variant-head-a">A — Stepper (channel-first)</th>
+        <th class="variant-head-b">B — Chat (bot-first)</th>
+        <th class="variant-head-c">C — Console (bot-first)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Product Fork</td>
+        <td>Channel-first — เชื่อม LINE ก่อน แล้วค่อยสร้างบอท</td>
+        <td>Bot-first — สร้างบอทก่อน เชื่อม LINE ทีหลังได้</td>
+        <td>Bot-first — สร้างบอทก่อน เชื่อม LINE ทีหลังได้</td>
+      </tr>
+      <tr>
+        <td>Target user</td>
+        <td>Non-technical SME owner ที่ต้องการ hand-holding</td>
+        <td>Non-technical SME owner ที่ต้องการ warmth + momentum</td>
+        <td>Operator / technical user ที่ต้องการ control</td>
+      </tr>
+      <tr>
+        <td>Time to "aha moment" (เห็นบอทตอบ)</td>
+        <td>ช้า — LINE token ขวางกลาง (step 2 ก่อนเห็นบอท)</td>
+        <td>เร็ว — เห็น mini-preview ก่อนถูกขอ LINE token</td>
+        <td>เร็ว — phone mockup interactive ทันที แต่ interface ซับซ้อน</td>
+      </tr>
+      <tr>
+        <td>LINE friction handling</td>
+        <td>Callout warning เต็ม screen — honest แต่ disruptive</td>
+        <td>"เชื่อมทีหลัง" skip ชัดเจน — <span class="tag tag-yes">defer-friendly</span></td>
+        <td>Collapsed banner ด้านล่าง — <span class="tag tag-deferred">hidden by default</span></td>
+      </tr>
+      <tr>
+        <td>Model change required</td>
+        <td><span class="tag tag-no">ไม่ต้อง</span> — ใช้ model ปัจจุบัน (bot 1:1 กับ LINE OA)</td>
+        <td><span class="tag tag-yes">ต้องการ</span> — bot ต้องแยกจาก LINE OA</td>
+        <td><span class="tag tag-yes">ต้องการ</span> — bot ต้องแยกจาก LINE OA</td>
+      </tr>
+      <tr>
+        <td>Estimated build cost</td>
+        <td><span class="tag tag-s">S</span> — ปรับ existing pages เป็น stepper (~1–2 sprint)</td>
+        <td><span class="tag tag-m">M</span> — chat UI + model decoupling (~3–4 sprint)</td>
+        <td><span class="tag tag-l">L</span> — split layout + live preview infra (~5–6 sprint)</td>
+      </tr>
+      <tr>
+        <td>Palette / feel</td>
+        <td>White, #2563EB accent, muted slate — conservative B2B</td>
+        <td>Soft white, #7C3AED purple, bubble typography — warm, approachable</td>
+        <td>Dark navy #0F172A, #2563EB accent, #10B981 live indicator — operator console</td>
+      </tr>
+      <tr>
+        <td>Density</td>
+        <td>Low — 1 task per screen, generous whitespace</td>
+        <td>Medium — one question at a time, chips for quick answers</td>
+        <td>High — all config visible, tabs, compact 36px inputs</td>
+      </tr>
+      <tr>
+        <td>Expected activation rate (hypothesis)</td>
+        <td>Moderate — drops at LINE token step</td>
+        <td>High — bot-first + deferrable LINE removes main blocker</td>
+        <td>Low for new users — console overwhelm; high for re-configure flow</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Decision notes ── -->
+<section class="notes-wrap">
+  <div class="section-title">Decision notes</div>
+  <div class="notes-grid">
+    <div class="note-card rec-card">
+      <h4>⭐ Recommendation: Variant B — Conversational Chat (bot-first)</h4>
+      <p>
+        เป้าหมายคือ "ผู้ใช้เห็นบอทตอบ" เร็วที่สุด. Variant B บรรลุเป้าได้ดีที่สุดเพราะ: (1) ผู้ใช้เห็น mini-preview บอทตัวเองก่อนถูกขอ LINE token — aha moment เกิดก่อน friction. (2) "เชื่อม LINE ทีหลัง" skip ช่วยให้ activation path ไม่บล็อก. (3) AIda persona บอก story ให้เชื่อมโยงกับ product จริง (AI Chat CRM). (4) Non-technical SME เข้าใจ conversational UI ได้ดีกว่า config form.
+        <br/><br/>
+        ข้อแลกเปลี่ยน: ต้องการ model change (decouple bot จาก LINE OA) — ถ้ายังไม่พร้อม ให้ implement Variant A ก่อนเป็น interim แล้ว migrate ไป B เมื่อ model พร้อม.
+      </p>
+    </div>
+    <div class="note-card">
+      <h4>Channel-first vs. Bot-first: the open decision</h4>
+      <p>
+        <strong>Channel-first (Variant A):</strong> ตรงกับ data model ปัจจุบัน (bot 1:1 กับ LINE OA). Build cost ต่ำ. แต่ LINE token friction เกิด step 2 ก่อน activation — ผู้ใช้ต้องออกไป Developer Console ก่อนจะ "รู้สึก" ว่า setup สำเร็จ.
+        <br/><br/>
+        <strong>Bot-first (B หรือ C):</strong> ต้องการ API ใหม่ (<code>POST /api/v1/bots</code>) และ decouple bot จาก LINE OA. Build cost สูงกว่า แต่ activation flow ดีกว่าอย่างมีนัยสำคัญ — LINE token กลายเป็น "optional next step" ไม่ใช่ "ด่านบังคับ".
+        <br/><br/>
+        ข้อแนะนำ: <strong>commit to bot-first if the sprint allows it</strong>. หากไม่ได้ ให้ทำ Variant A ก่อนแต่ต้องย้าย LINE connect ไปหลัง template selection ให้มากที่สุด
+      </p>
+    </div>
+    <div class="note-card">
+      <h4>Visual QA Notes</h4>
+      <p>
+        <strong>A:</strong> Step navigation tabs (demo only) อาจ confuse ถ้าใส่ production — ให้ลบออก. Webhook URL display ต้องการ real slug generation ใน backend. LINE screenshot placeholder ต้องการ real screenshot.
+        <br/><br/>
+        <strong>B:</strong> Bottom bar fixed position อาจ overlap content บน mobile — ต้องทดสอบ iOS Safari safe area. Demo nav (prototype only) ต้องลบ production. "เชื่อม LINE ทีหลัง" button ต้องเชื่อม onboarding_state tracking จริง.
+        <br/><br/>
+        <strong>C:</strong> Split layout collapse ที่ &lt;900px — ต้องทดสอบ responsive breakpoint. Live phone mockup ต้องการ streaming API หรือ mock response service. Dark mode by default อาจไม่ตรงกับ design system ที่เหลือ (light by default).
+      </p>
+    </div>
+    <div class="note-card">
+      <h4>Variant C — When to use</h4>
+      <p>
+        Variant C เหมาะสำหรับ <strong>"re-configure" flow</strong> (ผู้ใช้กลับมาแก้ไขบอทที่มีอยู่แล้ว) มากกว่า first-time onboarding. ลักษณะ split-screen console ตรงกับ Bot Builder page ที่มีอยู่แล้ว (/dashboard/bots/[id]) — อาจ merge C เข้ากับ Bot Builder แทนที่จะเป็น onboarding wizard.
+        <br/><br/>
+        ถ้าต้องการ implement C ให้ใช้เป็น "expert mode" toggle ใน Variant A หรือ B — ไม่ใช่ default path สำหรับ new users.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Live previews ── -->
+<section class="previews-wrap">
+  <div class="previews-header">
+    <div class="section-title" style="margin-bottom:0;">Live previews</div>
+    <div class="preview-toggle" role="group" aria-label="ขนาด preview">
+      <button class="active" onclick="setHeight(700)">Full</button>
+      <button onclick="setHeight(500)">Medium</button>
+      <button onclick="setHeight(360)">Short</button>
+    </div>
+  </div>
+
+  <div class="iframes-grid" id="iframes-grid">
+
+    <div class="iframe-col">
+      <div class="iframe-label">
+        <div class="variant-dot dot-a"></div>
+        <div>
+          <div class="iframe-label-text variant-head-a">A — Calm Guided Stepper</div>
+          <div class="iframe-sublabel">Channel-first · White · Low density · Build: S</div>
+        </div>
+      </div>
+      <div class="iframe-wrap">
+        <iframe src="variant-a.html" title="Variant A — Calm Guided Stepper" loading="lazy"></iframe>
+      </div>
+      <a class="open-link" href="variant-a.html" target="_blank" rel="noopener">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        เปิดเต็มหน้าจอ
+      </a>
+    </div>
+
+    <div class="iframe-col">
+      <div class="iframe-label">
+        <div class="variant-dot dot-b"></div>
+        <div>
+          <div class="iframe-label-text variant-head-b">B — Conversational Setup Chat ⭐</div>
+          <div class="iframe-sublabel">Bot-first · Purple · Medium density · Build: M</div>
+        </div>
+      </div>
+      <div class="iframe-wrap">
+        <iframe src="variant-b.html" title="Variant B — Conversational Setup Chat" loading="lazy"></iframe>
+      </div>
+      <a class="open-link" href="variant-b.html" target="_blank" rel="noopener">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        เปิดเต็มหน้าจอ
+      </a>
+    </div>
+
+    <div class="iframe-col">
+      <div class="iframe-label">
+        <div class="variant-dot dot-c"></div>
+        <div>
+          <div class="iframe-label-text variant-head-c">C — Split-Screen Console</div>
+          <div class="iframe-sublabel">Bot-first · Dark Navy · High density · Build: L</div>
+        </div>
+      </div>
+      <div class="iframe-wrap">
+        <iframe src="variant-c.html" title="Variant C — Split-Screen Console" loading="lazy"></iframe>
+      </div>
+      <a class="open-link" href="variant-c.html" target="_blank" rel="noopener">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        เปิดเต็มหน้าจอ
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  function setHeight(h) {
+    document.querySelectorAll('iframe').forEach(f => f.style.height = h + 'px');
+    document.querySelectorAll('.preview-toggle button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>

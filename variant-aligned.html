@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CustomerOS — Setup Wizard (Aligned: bot-first, สเปกลูกค้า Paul)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --primary:#2563EB; --primary-hover:#1D4ED8; --primary-light:#EFF6FF;
+    --secondary:#7C3AED; --success:#10B981; --warning:#F59E0B; --danger:#EF4444;
+    --text:#0F172A; --text2:#475569; --muted:#94A3B8; --border:#E2E8F0;
+    --surface:#F8FAFC; --white:#FFFFFF; --slate100:#F1F5F9; --slate200:#E2E8F0;
+    --r-sm:7px; --r-md:11px; --r-lg:16px;
+    --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  }
+  html,body{height:100%;font-family:'Inter','Noto Sans Thai',sans-serif;font-size:17px;line-height:1.6;color:var(--text);background:var(--surface);-webkit-font-smoothing:antialiased}
+  .shell{display:flex;min-height:100vh}
+  /* rail */
+  .rail{width:248px;min-height:100vh;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;padding:36px 0;position:sticky;top:0;height:100vh}
+  .logo{padding:0 26px 30px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--primary);letter-spacing:-.3px}
+  .logo .ic{width:32px;height:32px;background:var(--primary);border-radius:8px;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:700}
+  .steps{list-style:none;padding:0 14px;flex:1}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:11px 10px;border-radius:var(--r-md);margin-bottom:2px;text-decoration:none;color:inherit}
+  .step:hover{background:var(--slate100)}
+  .step.active{background:var(--primary-light)}
+  .dot{width:28px;height:28px;border-radius:50%;flex:0 0 28px;display:grid;place-items:center;font-size:12px;font-weight:600;border:2px solid var(--slate200);color:var(--muted);background:#fff;margin-top:1px}
+  .step.done .dot{background:var(--success);border-color:var(--success);color:#fff}
+  .step.active .dot{background:var(--primary);border-color:var(--primary);color:#fff}
+  .meta{flex:1}
+  .s-label{font-family:'Noto Sans Thai',sans-serif;font-size:14.5px;font-weight:500;line-height:1.35;color:var(--text2)}
+  .step.active .s-label{color:var(--primary);font-weight:600}
+  .s-sub{font-size:12px;color:var(--muted);margin-top:1px}
+  .connector{width:2px;height:14px;background:var(--border);margin:0 0 2px 23px}
+  .connector.done{background:var(--success)}
+  .rail-prog{padding:22px 26px 0;border-top:1px solid var(--border);margin-top:auto}
+  .rail-prog .lab{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+  .bar{height:5px;background:var(--slate200);border-radius:3px;overflow:hidden}
+  .fill{height:100%;width:40%;background:var(--primary);border-radius:3px}
+  /* content */
+  .content{flex:1;display:flex;flex-direction:column;min-height:100vh}
+  .topbar{height:56px;border-bottom:1px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+  .crumb{font-size:14px;color:var(--muted)}
+  .crumb b{color:var(--text2);font-weight:600}
+  .ghost{font-size:14px;color:var(--text2);background:none;border:none;cursor:pointer;padding:7px 13px;border-radius:var(--r-sm)}
+  .ghost:hover{background:var(--slate100);color:var(--text)}
+  .body{flex:1;display:flex;justify-content:center;padding:52px 40px}
+  .pane{width:100%;max-width:600px}
+  .kicker{font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--primary);text-transform:uppercase;margin-bottom:8px}
+  h1{font-size:27px;letter-spacing:-.5px;margin-bottom:9px}
+  .sub{color:var(--text2);font-size:15.5px;margin-bottom:14px;max-width:480px}
+  /* bot-first banner */
+  .banner{display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,var(--success) 9%,transparent);border:1px solid color-mix(in srgb,var(--success) 30%,transparent);border-radius:var(--r-md);padding:13px 15px;margin-bottom:28px}
+  .banner .bi{font-size:18px;line-height:1.3}
+  .banner p{font-size:13.5px;color:var(--text2);line-height:1.55}
+  .banner b{color:var(--success)}
+  .lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:0 0 12px}
+  .cards{display:flex;flex-direction:column;gap:11px;margin-bottom:26px}
+  .card{border:2px solid var(--border);border-radius:var(--r-md);padding:15px 17px;cursor:pointer;display:flex;gap:14px;align-items:center;background:#fff;transition:.14s}
+  .card:hover{border-color:#C7D7F5}
+  .card.sel{border-color:var(--primary);background:var(--primary-light)}
+  .card .ci{width:44px;height:44px;border-radius:11px;flex:0 0 44px;display:grid;place-items:center;font-size:21px;background:#fff;border:1px solid var(--border)}
+  .card h3{font-size:16.5px;margin-bottom:2px}
+  .card p{font-size:13.5px;color:var(--muted)}
+  .card .ck{margin-left:auto;color:var(--primary);font-weight:700;font-size:18px;opacity:0}
+  .card.sel .ck{opacity:1}
+  .field{margin-bottom:24px}
+  input[type=text]{width:100%;padding:13px 15px;border:2px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:15.5px;color:var(--text)}
+  input:focus{outline:none;border-color:var(--primary)}
+  /* preview teaser */
+  .try{display:flex;gap:13px;align-items:center;border:1px dashed var(--slate200);border-radius:var(--r-md);padding:14px 16px;margin-bottom:30px;background:var(--white)}
+  .try .av{width:38px;height:38px;border-radius:50%;flex:0 0 38px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:grid;place-items:center;color:#fff;font-size:17px}
+  .try .tx{flex:1}
+  .try .tx b{font-size:14.5px}
+  .try .tx p{font-size:12.5px;color:var(--muted)}
+  .try .go{font-size:13.5px;font-weight:600;color:var(--primary);background:var(--primary-light);border:none;border-radius:var(--r-sm);padding:9px 15px;cursor:pointer;white-space:nowrap}
+  .actions{display:flex;gap:12px;align-items:center}
+  .btn{padding:13px 24px;border-radius:var(--r-md);font-family:inherit;font-size:15px;font-weight:600;border:none;cursor:pointer}
+  .btn-pri{background:var(--primary);color:#fff;display:inline-flex;align-items:center;gap:8px}
+  .btn-pri:hover{background:var(--primary-hover)}
+  .btn-gho{background:transparent;color:var(--text2);border:2px solid var(--border)}
+  .sp{flex:1}
+  .tiny{font-size:12.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="logo"><div class="ic">C</div>CustomerOS</div>
+      <ul class="steps">
+        <li><a class="step done" href="#"><span class="dot">✓</span><span class="meta"><span class="s-label">สร้างบริษัท</span><span class="s-sub">เดโม่ ช็อป · เสร็จแล้ว</span></span></a></li>
+        <div class="connector done"></div>
+        <li><a class="step active" href="#"><span class="dot">2</span><span class="meta"><span class="s-label">สร้างบอท</span><span class="s-sub">เลือกแม่แบบ + ตั้งชื่อ</span></span></a></li>
+        <div class="connector"></div>
+        <li><a class="step" href="#"><span class="dot">3</span><span class="meta"><span class="s-label">สร้างสินค้า</span><span class="s-sub">เพิ่มเอง หรือดึงจากเว็บ</span></span></a></li>
+        <div class="connector"></div>
+        <li><a class="step" href="#"><span class="dot">4</span><span class="meta"><span class="s-label">เชื่อมสมอง AI</span><span class="s-sub">เปิดบอทออนไลน์</span></span></a></li>
+        <div class="connector"></div>
+        <li><a class="step" href="#"><span class="dot">5</span><span class="meta"><span class="s-label">สร้างฐานความรู้</span><span class="s-sub">ทยอยทำได้เรื่อยๆ</span></span></a></li>
+      </ul>
+      <div class="rail-prog">
+        <div class="lab"><span>ความคืบหน้า</span><span>2 / 5</span></div>
+        <div class="bar"><div class="fill"></div></div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <div class="crumb">ตั้งค่าเริ่มต้น · <b>สร้างบอท</b></div>
+        <button class="ghost">บันทึกไว้ก่อน ออกได้</button>
+      </div>
+      <div class="body">
+        <div class="pane">
+          <div class="kicker">ขั้นตอนที่ 2 จาก 5</div>
+          <h1>สร้างบอทตัวแรก</h1>
+          <p class="sub">เลือกแม่แบบที่ใกล้งานคุณที่สุด ตั้งชื่อ แล้วลองคุยได้เลย</p>
+
+          <div class="banner">
+            <span class="bi">💡</span>
+            <p><b>ยังไม่ต้องเชื่อม LINE หรือ Facebook ตอนนี้</b> — สร้างบอทให้เสร็จแล้วลองคุยดูก่อน ค่อยเชื่อมช่องทางทีหลังในขั้นตอน "เชื่อมสมอง AI" ได้เลย</p>
+          </div>
+
+          <p class="lbl">เลือกแม่แบบ</p>
+          <div class="cards">
+            <div class="card sel"><div class="ci">🛍️</div><div><h3>Sales Bot</h3><p>ช่วยขายสินค้า ปิดการขาย และตอบเรื่องราคา</p></div><div class="ck">✓</div></div>
+            <div class="card"><div class="ci">🎧</div><div><h3>Support Bot</h3><p>ตอบคำถามหลังการขาย ปัญหาการใช้งาน และส่งต่อทีมงาน</p></div><div class="ck">✓</div></div>
+            <div class="card"><div class="ci">📅</div><div><h3>Appointment Bot</h3><p>ช่วยจองคิว นัดหมาย และจัดการเวลาคร่าวๆ</p></div><div class="ck">✓</div></div>
+          </div>
+
+          <div class="field">
+            <p class="lbl">ตั้งชื่อบอท</p>
+            <input type="text" value="น้องขายดี" />
+          </div>
+
+          <div class="try">
+            <div class="av">🤖</div>
+            <div class="tx"><b>ลองคุยกับบอทเลย</b><p>พิมพ์ทักดูว่าบอทตอบยังไง ก่อนเปิดใช้จริง</p></div>
+            <button class="go">ลองคุย →</button>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-gho">ย้อนกลับ</button>
+            <div class="sp"></div>
+            <span class="tiny">ข้ามไปก่อนก็ได้</span>
+            <button class="btn btn-pri">ถัดไป — สร้างสินค้า →</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
