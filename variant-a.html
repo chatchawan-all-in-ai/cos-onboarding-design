@@ -1,0 +1,1424 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CustomerOS — ตั้งค่าบอทแรกของคุณ (Variant A: Calm Guided Stepper)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ── Reset & Base ─────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --theme-primary: #2563EB;
+    --theme-primary-hover: #1D4ED8;
+    --theme-primary-light: #EFF6FF;
+    --theme-secondary: #7C3AED;
+    --theme-success: #10B981;
+    --theme-warning: #F59E0B;
+    --theme-danger: #EF4444;
+    --rail-width: 220px;
+    --content-max: 640px;
+    --step-complete: #10B981;
+    --step-active: #2563EB;
+    --step-inactive: #CBD5E1;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --border: #E2E8F0;
+    --surface: #F8FAFC;
+    --white: #FFFFFF;
+    --slate-100: #F1F5F9;
+    --slate-200: #E2E8F0;
+    --slate-700: #334155;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--surface);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout Shell ─────────────────────────────────── */
+  .shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Progress Rail ────────────────────────────────── */
+  .rail {
+    width: var(--rail-width);
+    min-height: 100vh;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    padding: 40px 0;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .rail-logo {
+    padding: 0 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--theme-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .rail-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--theme-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .rail-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 24px 28px;
+  }
+
+  .rail-steps {
+    list-style: none;
+    padding: 0 16px;
+    flex: 1;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 8px;
+    border-radius: var(--radius-md);
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .step-item { transition: none; }
+  }
+
+  .step-item:hover { background: var(--slate-100); }
+  .step-item.active { background: var(--theme-primary-light); }
+
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+    border: 2px solid var(--step-inactive);
+    color: var(--text-muted);
+    background: var(--white);
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .step-dot { transition: none; }
+  }
+
+  .step-item.complete .step-dot {
+    border-color: var(--step-complete);
+    background: var(--step-complete);
+    color: white;
+  }
+
+  .step-item.active .step-dot {
+    border-color: var(--step-active);
+    background: var(--step-active);
+    color: white;
+  }
+
+  .step-dot-check::before { content: "✓"; }
+
+  .step-meta { flex: 1; }
+
+  .step-label {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text-secondary);
+  }
+
+  .step-item.active .step-label { color: var(--theme-primary); font-weight: 600; }
+  .step-item.complete .step-label { color: var(--text-secondary); }
+
+  .step-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Noto Sans Thai', sans-serif;
+    margin-top: 1px;
+  }
+
+  .step-connector {
+    width: 2px;
+    height: 16px;
+    background: var(--border);
+    margin: 0 0 4px 27px;
+  }
+
+  .step-connector.done { background: var(--step-complete); }
+
+  /* Progress bar at bottom of rail */
+  .rail-progress {
+    padding: 24px 24px 0;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .rail-progress-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Noto Sans Thai', sans-serif;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .rail-progress-bar {
+    height: 4px;
+    background: var(--slate-200);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .rail-progress-fill {
+    height: 100%;
+    width: 33%;
+    background: var(--theme-primary);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rail-progress-fill { transition: none; }
+  }
+
+  /* ── Content Area ─────────────────────────────────── */
+  .content {
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .content-topbar {
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    flex-shrink: 0;
+  }
+
+  .topbar-breadcrumb {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .topbar-breadcrumb span { color: var(--text-secondary); font-weight: 500; }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-ghost {
+    font-size: 14px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .btn-ghost:hover { background: var(--slate-100); color: var(--text-primary); }
+  .btn-ghost:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
+
+  /* Content body */
+  .content-body {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 64px 40px;
+  }
+
+  .step-pane {
+    width: 100%;
+    max-width: var(--content-max);
+  }
+
+  /* Step header */
+  .step-counter {
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--theme-primary);
+    margin-bottom: 12px;
+  }
+
+  .step-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .step-subtitle {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 17px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 52ch;
+    margin-bottom: 40px;
+  }
+
+  /* Form elements */
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  label {
+    display: block;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .label-hint {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-left: 8px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  textarea {
+    width: 100%;
+    height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0 14px;
+    font-size: 15px;
+    font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+    color: var(--text-primary);
+    background: var(--white);
+    transition: border-color 0.12s, box-shadow 0.12s;
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    input[type="text"], input[type="password"], textarea { transition: none; }
+  }
+
+  input:hover { border-color: #94A3B8; }
+  input:focus { border-color: var(--theme-primary); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+  textarea {
+    height: auto;
+    min-height: 100px;
+    padding: 12px 14px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .input-with-suffix {
+    position: relative;
+  }
+
+  .input-suffix {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    pointer-events: none;
+  }
+
+  .char-counter {
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    margin-top: 4px;
+  }
+
+  /* Token fields */
+  .token-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .token-field {
+    position: relative;
+  }
+
+  .token-field input {
+    font-family: 'Inter', monospace;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    padding-right: 72px;
+  }
+
+  .token-show-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    color: var(--theme-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 4px;
+    font-weight: 500;
+  }
+
+  .token-show-btn:hover { color: var(--theme-primary-hover); }
+  .token-show-btn:focus-visible { outline: 2px solid var(--theme-primary); border-radius: 4px; }
+
+  /* Help/info callout */
+  .callout {
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    border: 1px solid;
+  }
+
+  .callout-info {
+    background: var(--theme-primary-light);
+    border-color: rgba(37,99,235,.2);
+  }
+
+  .callout-warning {
+    background: #FFFBEB;
+    border-color: rgba(245,158,11,.25);
+  }
+
+  .callout-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1.5;
+  }
+
+  .callout-body { flex: 1; }
+
+  .callout-title {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .callout-text {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    max-width: 55ch;
+  }
+
+  .callout-steps {
+    margin-top: 10px;
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .callout-steps li {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.55;
+  }
+
+  .callout-steps li::before {
+    content: attr(data-n);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    color: white;
+    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .callout-link {
+    color: var(--theme-primary);
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .callout-link:hover { color: var(--theme-primary-hover); text-decoration: underline; }
+  .callout-link:focus-visible { outline: 2px solid var(--theme-primary); border-radius: 3px; }
+
+  /* Webhook URL display */
+  .webhook-display {
+    background: var(--slate-100);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .webhook-url {
+    font-family: 'Inter', monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .copy-btn {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: var(--theme-primary);
+    background: white;
+    border: 1.5px solid var(--theme-primary);
+    border-radius: var(--radius-sm);
+    padding: 5px 12px;
+    cursor: pointer;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.12s;
+  }
+
+  .copy-btn:hover { background: var(--theme-primary-light); }
+  .copy-btn:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
+  .copy-btn:active { background: rgba(37,99,235,.15); }
+
+  /* LINE console screenshot placeholder */
+  .screenshot-placeholder {
+    width: 100%;
+    aspect-ratio: 16/7;
+    background: linear-gradient(135deg, #1a1f2e 0%, #2d3561 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    color: rgba(255,255,255,.7);
+    font-size: 13px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .screenshot-placeholder::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    height: 28px;
+    background: rgba(255,255,255,.08);
+    border-radius: 4px;
+  }
+
+  .screenshot-icon { font-size: 24px; opacity: 0.6; }
+
+  .screenshot-label {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+
+  /* Template cards */
+  .template-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .template-card {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    cursor: pointer;
+    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    position: relative;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .template-card { transition: none; }
+  }
+
+  .template-card:hover {
+    border-color: var(--theme-primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .template-card.selected {
+    border-color: var(--theme-primary);
+    background: var(--theme-primary-light);
+  }
+
+  .template-card:focus-visible {
+    outline: 2px solid var(--theme-primary);
+    outline-offset: 2px;
+  }
+
+  .template-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--slate-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .template-card.selected .template-icon {
+    background: rgba(37,99,235,.12);
+  }
+
+  .template-body { flex: 1; }
+
+  .template-name {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .template-desc {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  .template-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.12s;
+    margin-top: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .template-check { transition: none; }
+  }
+
+  .template-card.selected .template-check {
+    background: var(--theme-primary);
+    border-color: var(--theme-primary);
+    color: white;
+    font-size: 12px;
+  }
+
+  .template-check-mark::before { content: "✓"; }
+
+  /* Test chat */
+  .test-chat {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .test-chat-header {
+    padding: 12px 16px;
+    background: var(--slate-100);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .chat-bot-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .chat-bot-name {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .chat-status {
+    font-size: 12px;
+    color: var(--theme-success);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .chat-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--theme-success);
+    display: inline-block;
+  }
+
+  .chat-messages {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 200px;
+  }
+
+  .msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 85%;
+  }
+
+  .msg-bot { align-self: flex-start; }
+  .msg-user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  .msg-bot .msg-bubble {
+    background: var(--slate-100);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg-user .msg-bubble {
+    background: var(--theme-primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    margin-top: 4px;
+    align-self: flex-end;
+  }
+
+  .chat-input-row {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--white);
+  }
+
+  .chat-input {
+    flex: 1;
+    height: 40px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 0 16px;
+    font-size: 15px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    color: var(--text-primary);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.12s;
+  }
+
+  .chat-input:focus { border-color: var(--theme-primary); }
+  .chat-input:focus-visible { border-color: var(--theme-primary); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+  .chat-send {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: background 0.12s;
+  }
+
+  .chat-send:hover { background: var(--theme-primary-hover); }
+  .chat-send:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
+  .chat-send:active { background: #1E40AF; }
+
+  /* ── Action bar ───────────────────────────────────── */
+  .action-bar {
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
+    background: var(--white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .btn-primary {
+    height: 44px;
+    padding: 0 28px;
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.12s, box-shadow 0.12s;
+    outline: none;
+  }
+
+  .btn-primary:hover { background: var(--theme-primary-hover); box-shadow: 0 2px 8px rgba(37,99,235,.3); }
+  .btn-primary:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
+  .btn-primary:active { background: #1E40AF; }
+  .btn-primary:disabled {
+    background: var(--slate-200);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-secondary {
+    height: 44px;
+    padding: 0 24px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.12s, color 0.12s, background 0.12s;
+  }
+
+  .btn-secondary:hover { border-color: #94A3B8; color: var(--text-primary); background: var(--slate-100); }
+  .btn-secondary:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
+  .btn-secondary:active { background: var(--slate-200); }
+
+  /* ── Success state ────────────────────────────────── */
+  .success-pane {
+    text-align: center;
+    padding: 20px 0 60px;
+  }
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(16,185,129,.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 36px;
+  }
+
+  .success-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+
+  .success-subtitle {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 17px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 48ch;
+    margin: 0 auto 40px;
+  }
+
+  .success-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    text-align: left;
+    margin-bottom: 40px;
+  }
+
+  .success-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 16px;
+  }
+
+  .success-card-icon { font-size: 20px; margin-bottom: 8px; }
+
+  .success-card-title {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .success-card-text {
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Demo step navigation tabs */
+  .demo-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--slate-100);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+
+  .demo-tab {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 12px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    white-space: nowrap;
+    padding: 0 12px;
+  }
+
+  .demo-tab.active {
+    background: var(--white);
+    color: var(--text-primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .demo-tab:hover:not(.active) { background: rgba(255,255,255,.6); color: var(--text-secondary); }
+  .demo-tab:focus-visible { outline: 2px solid var(--theme-primary); }
+
+  .demo-pane { display: none; }
+  .demo-pane.active { display: block; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .rail { display: none; }
+    .content-body { padding: 32px 20px; }
+    .action-bar { padding: 16px 20px; }
+    .content-topbar { padding: 0 20px; }
+    .success-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Rail ── -->
+  <nav class="rail" aria-label="ขั้นตอนการตั้งค่า">
+    <div class="rail-logo">
+      <div class="rail-logo-icon">C</div>
+      CustomerOS
+    </div>
+    <div class="rail-divider"></div>
+
+    <ol class="rail-steps">
+      <li class="step-item complete" tabindex="0" role="button" aria-current="false">
+        <div class="step-dot step-dot-check" aria-hidden="true"></div>
+        <div class="step-meta">
+          <div class="step-label">ยินดีต้อนรับ</div>
+          <div class="step-sub">สร้างบริษัทของคุณ</div>
+        </div>
+      </li>
+      <div class="step-connector done" aria-hidden="true"></div>
+
+      <li class="step-item active" tabindex="0" role="button" aria-current="step">
+        <div class="step-dot" aria-label="ขั้นตอนปัจจุบัน">2</div>
+        <div class="step-meta">
+          <div class="step-label">เชื่อม LINE OA</div>
+          <div class="step-sub">ตั้งค่า webhook</div>
+        </div>
+      </li>
+      <div class="step-connector" aria-hidden="true"></div>
+
+      <li class="step-item" tabindex="0" role="button">
+        <div class="step-dot">3</div>
+        <div class="step-meta">
+          <div class="step-label">เลือก template บอท</div>
+          <div class="step-sub">Sales / Support / นัดหมาย</div>
+        </div>
+      </li>
+      <div class="step-connector" aria-hidden="true"></div>
+
+      <li class="step-item" tabindex="0" role="button">
+        <div class="step-dot">4</div>
+        <div class="step-meta">
+          <div class="step-label">ตั้งชื่อ &amp; คำทักทาย</div>
+          <div class="step-sub">ปรับแต่งบอท</div>
+        </div>
+      </li>
+      <div class="step-connector" aria-hidden="true"></div>
+
+      <li class="step-item" tabindex="0" role="button">
+        <div class="step-dot">5</div>
+        <div class="step-meta">
+          <div class="step-label">ทดสอบบอท</div>
+          <div class="step-sub">ลองพูดคุย</div>
+        </div>
+      </li>
+      <div class="step-connector" aria-hidden="true"></div>
+
+      <li class="step-item" tabindex="0" role="button">
+        <div class="step-dot">6</div>
+        <div class="step-meta">
+          <div class="step-label">เสร็จสิ้น!</div>
+          <div class="step-sub">บอทพร้อมใช้งาน</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="rail-progress">
+      <div class="rail-progress-label">
+        <span>ความคืบหน้า</span>
+        <span>ขั้นที่ 2 / 6</span>
+      </div>
+      <div class="rail-progress-bar" role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100">
+        <div class="rail-progress-fill"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Content ── -->
+  <div class="content">
+    <div class="content-topbar">
+      <div class="topbar-breadcrumb">
+        ร้านกาแฟดอยช้าง &rsaquo; <span>ตั้งค่าเริ่มต้น</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-ghost" type="button">ข้ามขั้นตอนนี้</button>
+        <button class="btn-ghost" type="button">ออกจากการตั้งค่า</button>
+      </div>
+    </div>
+
+    <!-- Demo step switcher (for mockup review only) -->
+    <div style="padding: 12px 40px 0; background: var(--white); border-bottom: 1px solid var(--border);">
+      <div class="demo-tabs" role="tablist" aria-label="ดูตัวอย่างแต่ละขั้นตอน">
+        <button class="demo-tab" role="tab" onclick="showStep('welcome')">ยินดีต้อนรับ</button>
+        <button class="demo-tab active" role="tab" onclick="showStep('line')">เชื่อม LINE OA</button>
+        <button class="demo-tab" role="tab" onclick="showStep('template')">เลือก template</button>
+        <button class="demo-tab" role="tab" onclick="showStep('naming')">ตั้งชื่อบอท</button>
+        <button class="demo-tab" role="tab" onclick="showStep('test')">ทดสอบ</button>
+        <button class="demo-tab" role="tab" onclick="showStep('done')">สำเร็จ!</button>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <div class="step-pane">
+
+        <!-- Step: Welcome -->
+        <div class="demo-pane" id="pane-welcome">
+          <div class="step-counter">ขั้นตอนที่ 1 จาก 6</div>
+          <h1 class="step-title">ยินดีต้อนรับสู่ CustomerOS</h1>
+          <p class="step-subtitle">ยืนยันชื่อบริษัทของคุณก่อนเริ่มตั้งค่าบอทแรก ใช้เวลาไม่ถึง 5 นาที</p>
+          <div class="form-group">
+            <label for="company-name">ชื่อบริษัท / ร้านค้า</label>
+            <input type="text" id="company-name" value="ร้านกาแฟดอยช้าง" />
+          </div>
+          <div class="form-group">
+            <label for="company-type">ประเภทธุรกิจ</label>
+            <input type="text" id="company-type" placeholder="เช่น ร้านอาหาร, อีคอมเมิร์ซ, บริการ..." />
+          </div>
+        </div>
+
+        <!-- Step: Connect LINE OA -->
+        <div class="demo-pane active" id="pane-line">
+          <div class="step-counter">ขั้นตอนที่ 2 จาก 6</div>
+          <h1 class="step-title">เชื่อมต่อ LINE Official Account</h1>
+          <p class="step-subtitle">วาง Channel Access Token และ Channel Secret จาก LINE Developers Console เพื่อให้บอทของคุณรับและส่งข้อความได้</p>
+
+          <div class="callout callout-warning">
+            <div class="callout-icon">⚠️</div>
+            <div class="callout-body">
+              <div class="callout-title">ต้องทำใน LINE Developers Console ก่อน</div>
+              <div class="callout-text">ขั้นตอนนี้ต้องเข้า LINE Developers Console เพื่อคัดลอกข้อมูล และตั้งค่า Webhook URL ด้วยตัวเอง</div>
+              <ol class="callout-steps">
+                <li data-n="1">ไปที่ <strong>developers.line.me</strong> → เลือก Messaging API channel</li>
+                <li data-n="2">คัดลอก Channel Access Token (ใต้ "Messaging API" tab)</li>
+                <li data-n="3">คัดลอก Channel Secret (ใต้ "Basic settings")</li>
+                <li data-n="4">วาง Webhook URL ด้านล่างในช่อง Webhook settings</li>
+              </ol>
+              <a href="#" class="callout-link">เปิด LINE Developers Console ↗</a>
+            </div>
+          </div>
+
+          <div style="margin-top: 28px;">
+            <div class="form-group">
+              <label for="webhook-url-display">Webhook URL ของคุณ <span class="label-hint">— วางนี้ใน LINE Console</span></label>
+              <div class="webhook-display">
+                <div class="webhook-url">https://app.customeros.ai/api/v1/webhook/ri9k2mf4</div>
+                <button class="copy-btn" type="button" aria-label="คัดลอก Webhook URL">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>
+                  คัดลอก
+                </button>
+              </div>
+            </div>
+
+            <div class="token-field-group">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="channel-token">Channel Access Token</label>
+                <div class="token-field">
+                  <input type="password" id="channel-token" placeholder="eyJhbGciOiJIUzI1NiJ9.TUx2..." />
+                  <button class="token-show-btn" type="button" aria-label="แสดง/ซ่อน token">แสดง</button>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="channel-secret">Channel Secret</label>
+                <div class="token-field">
+                  <input type="password" id="channel-secret" placeholder="a1b2c3d4e5f6..." />
+                  <button class="token-show-btn" type="button" aria-label="แสดง/ซ่อน secret">แสดง</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="screenshot-placeholder" style="height: 120px;" aria-label="ตัวอย่าง LINE Developers Console">
+            <div class="screenshot-icon">🖥️</div>
+            <div class="screenshot-label">ตัวอย่าง: LINE Developers Console — Messaging API tab</div>
+          </div>
+        </div>
+
+        <!-- Step: Template -->
+        <div class="demo-pane" id="pane-template">
+          <div class="step-counter">ขั้นตอนที่ 3 จาก 6</div>
+          <h1 class="step-title">เลือก template สำหรับบอท</h1>
+          <p class="step-subtitle">เลือกบทบาทหลักของบอทของคุณ คุณปรับแต่งได้เสมอหลังจากนี้</p>
+
+          <div class="template-grid" role="radiogroup" aria-label="เลือก template บอท">
+            <div class="template-card selected" tabindex="0" role="radio" aria-checked="true">
+              <div class="template-icon">🛒</div>
+              <div class="template-body">
+                <div class="template-name">Sales Bot</div>
+                <div class="template-desc">ช่วยขายสินค้า ปิดการขาย และตอบเรื่องราคา</div>
+              </div>
+              <div class="template-check"><span class="template-check-mark"></span></div>
+            </div>
+
+            <div class="template-card" tabindex="0" role="radio" aria-checked="false">
+              <div class="template-icon">🎧</div>
+              <div class="template-body">
+                <div class="template-name">Support Bot</div>
+                <div class="template-desc">ตอบคำถามหลังการขาย ปัญหาการใช้งาน และส่งต่อทีมงาน</div>
+              </div>
+              <div class="template-check"></div>
+            </div>
+
+            <div class="template-card" tabindex="0" role="radio" aria-checked="false">
+              <div class="template-icon">📅</div>
+              <div class="template-body">
+                <div class="template-name">Appointment Bot</div>
+                <div class="template-desc">ช่วยจองคิว นัดหมาย และจัดการเวลาคร่าวๆ</div>
+              </div>
+              <div class="template-check"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step: Naming -->
+        <div class="demo-pane" id="pane-naming">
+          <div class="step-counter">ขั้นตอนที่ 4 จาก 6</div>
+          <h1 class="step-title">ตั้งชื่อบอทและคำทักทาย</h1>
+          <p class="step-subtitle">ชื่อและข้อความทักทายแรกที่ลูกค้าจะเห็น ทำให้เป็นธรรมชาติและตรงแบรนด์</p>
+
+          <div class="form-group">
+            <label for="bot-name">ชื่อบอท</label>
+            <div class="input-with-suffix">
+              <input type="text" id="bot-name" value="น้องกาแฟ" maxlength="30" style="padding-right: 52px;" />
+              <span class="input-suffix">5 / 30</span>
+            </div>
+            <div class="char-counter">ใช้ไป 5 ตัวอักษร</div>
+          </div>
+
+          <div class="form-group">
+            <label for="bot-greeting">ข้อความทักทายแรก</label>
+            <textarea id="bot-greeting" rows="4">สวัสดีค่ะ สนใจสินค้าหรือแพ็กเกจไหน แจ้งได้เลยนะคะ เดี๋ยวช่วยแนะนำให้ตรงความต้องการค่ะ</textarea>
+            <div class="char-counter">91 ตัวอักษร</div>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-icon">💡</div>
+            <div class="callout-body">
+              <div class="callout-title">เคล็ดลับ</div>
+              <div class="callout-text">คำทักทายที่ดีควรบอกว่าบอทช่วยอะไรได้บ้าง และใช้ภาษาที่เป็นมิตรกับกลุ่มลูกค้าของคุณ</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step: Test -->
+        <div class="demo-pane" id="pane-test">
+          <div class="step-counter">ขั้นตอนที่ 5 จาก 6</div>
+          <h1 class="step-title">ทดสอบบอทของคุณ</h1>
+          <p class="step-subtitle">ลองพิมพ์คำถามเหมือนที่ลูกค้าจะถาม บอทจะตอบตาม template ที่เลือกไว้</p>
+
+          <div class="test-chat">
+            <div class="test-chat-header">
+              <div class="chat-bot-avatar">น</div>
+              <div>
+                <div class="chat-bot-name">น้องกาแฟ</div>
+                <div class="chat-status">Online • ทดสอบ</div>
+              </div>
+            </div>
+            <div class="chat-messages" aria-live="polite">
+              <div class="msg msg-bot">
+                <div class="msg-avatar">น</div>
+                <div>
+                  <div class="msg-bubble">สวัสดีค่ะ สนใจสินค้าหรือแพ็กเกจไหน แจ้งได้เลยนะคะ เดี๋ยวช่วยแนะนำให้ตรงความต้องการค่ะ</div>
+                  <div class="msg-time">10:30</div>
+                </div>
+              </div>
+              <div class="msg msg-user">
+                <div>
+                  <div class="msg-bubble">มีกาแฟอะไรบ้าง</div>
+                  <div class="msg-time" style="text-align:right;">10:31</div>
+                </div>
+              </div>
+              <div class="msg msg-bot">
+                <div class="msg-avatar">น</div>
+                <div>
+                  <div class="msg-bubble">เรามีเมนูกาแฟหลายแบบเลยค่ะ ทั้ง Espresso, Latte, Cappuccino และ Cold Brew สนใจแบบไหนเป็นพิเศษไหมคะ?</div>
+                  <div class="msg-time">10:31</div>
+                </div>
+              </div>
+            </div>
+            <div class="chat-input-row">
+              <input class="chat-input" type="text" placeholder="พิมพ์ข้อความทดสอบ..." aria-label="ข้อความทดสอบ" />
+              <button class="chat-send" type="button" aria-label="ส่งข้อความ">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step: Done -->
+        <div class="demo-pane" id="pane-done">
+          <div class="success-pane">
+            <div class="success-icon" role="img" aria-label="สำเร็จ">🎉</div>
+            <h1 class="success-title">บอทพร้อมใช้งานแล้ว!</h1>
+            <p class="success-subtitle">น้องกาแฟถูกเชื่อมกับ LINE OA ของ ร้านกาแฟดอยช้าง เรียบร้อยแล้ว ลูกค้าของคุณจะได้รับการตอบกลับทันที</p>
+
+            <div class="success-cards">
+              <div class="success-card">
+                <div class="success-card-icon">🤖</div>
+                <div class="success-card-title">บอทของคุณ</div>
+                <div class="success-card-text">น้องกาแฟ (Sales Bot) พร้อมตอบลูกค้า 24 ชั่วโมง</div>
+              </div>
+              <div class="success-card">
+                <div class="success-card-icon">📊</div>
+                <div class="success-card-title">Dashboard</div>
+                <div class="success-card-text">ดูสถิติการสนทนา การขาย และ Lead score</div>
+              </div>
+              <div class="success-card">
+                <div class="success-card-icon">🎯</div>
+                <div class="success-card-title">ขั้นตอนถัดไป</div>
+                <div class="success-card-text">เพิ่มข้อมูลสินค้า และ Knowledge base</div>
+              </div>
+            </div>
+
+            <button class="btn-primary" type="button" style="margin: 0 auto; height: 52px; padding: 0 36px; font-size: 16px;">
+              ไปยัง Dashboard
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- .step-pane -->
+    </div><!-- .content-body -->
+
+    <div class="action-bar">
+      <button class="btn-secondary" type="button">← ย้อนกลับ</button>
+      <button class="btn-primary" type="button">
+        ถัดไป →
+      </button>
+    </div>
+  </div><!-- .content -->
+
+</div><!-- .shell -->
+
+<script>
+  function showStep(key) {
+    // Hide all panes
+    document.querySelectorAll('.demo-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+    // Show target
+    const pane = document.getElementById('pane-' + key);
+    if (pane) pane.classList.add('active');
+    // Highlight active tab
+    const tabs = document.querySelectorAll('.demo-tab');
+    const stepMap = { welcome:0, line:1, template:2, naming:3, test:4, done:5 };
+    const idx = stepMap[key];
+    if (tabs[idx]) tabs[idx].classList.add('active');
+
+    // Update rail
+    const stepItems = document.querySelectorAll('.step-item');
+    stepItems.forEach((item, i) => {
+      item.classList.remove('active', 'complete');
+      if (i < idx) item.classList.add('complete');
+      else if (i === idx) item.classList.add('active');
+    });
+    const connectors = document.querySelectorAll('.step-connector');
+    connectors.forEach((c, i) => {
+      c.classList.remove('done');
+      if (i < idx) c.classList.add('done');
+    });
+
+    // Update progress
+    const pct = Math.round((idx / 5) * 100);
+    document.querySelector('.rail-progress-fill').style.width = pct + '%';
+    document.querySelector('.rail-progress-label span:last-child').textContent = 'ขั้นที่ ' + (idx+1) + ' / 6';
+    document.querySelector('.topbar-breadcrumb').innerHTML = 'ร้านกาแฟดอยช้าง &rsaquo; <span>ตั้งค่าเริ่มต้น</span>';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1422 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CustomerOS — ตั้งค่าบอทแรกของคุณ (Variant C: Split-Screen Console)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ── Reset & Variables ──────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --theme-primary: #2563EB;
+    --theme-primary-hover: #1D4ED8;
+    --theme-primary-glow: rgba(37,99,235,.25);
+    --theme-secondary: #7C3AED;
+    --theme-success: #10B981;
+    --theme-success-dim: rgba(16,185,129,.15);
+    --theme-warning: #F59E0B;
+    --theme-danger: #EF4444;
+
+    /* Dark shell */
+    --shell: #0F172A;
+    --panel-l: #1E293B;
+    --panel-r: #0F172A;
+    --surface-raised: #263245;
+    --border-dark: rgba(255,255,255,.08);
+    --border-dark-strong: rgba(255,255,255,.14);
+
+    /* Text on dark */
+    --text-bright: #F1F5F9;
+    --text-dim: #94A3B8;
+    --text-faint: #64748B;
+
+    /* Input on dark */
+    --input-bg: #1A2844;
+    --input-border: rgba(255,255,255,.12);
+    --input-border-focus: #2563EB;
+
+    /* Phone mock */
+    --phone-shell: #1C1C1E;
+    --phone-screen: #FFFFFF;
+    --line-green: #06C755;
+    --line-bubble-bg: #E9EAEB;
+    --line-user-bg: #C6E5B3;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --shadow-dark: 0 4px 20px rgba(0,0,0,.4);
+    --shadow-glow: 0 0 0 1px rgba(37,99,235,.3), 0 4px 20px rgba(37,99,235,.15);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-bright);
+    background: var(--shell);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ── App shell ──────────────────────────────────── */
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Topbar ─────────────────────────────────────── */
+  .topbar {
+    height: 48px;
+    background: #162032;
+    border-bottom: 1px solid var(--border-dark);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 0;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-bright);
+    letter-spacing: -0.2px;
+    margin-right: 24px;
+  }
+
+  .brand-icon {
+    width: 24px;
+    height: 24px;
+    background: var(--theme-primary);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .topbar-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border-dark);
+    margin: 0 20px;
+  }
+
+  .topbar-path {
+    font-size: 12px;
+    color: var(--text-faint);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .path-sep { color: var(--text-faint); opacity: 0.5; }
+
+  .path-current {
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .topbar-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+    border: 1px solid;
+  }
+
+  .badge-draft {
+    background: rgba(245,158,11,.1);
+    border-color: rgba(245,158,11,.3);
+    color: var(--theme-warning);
+  }
+
+  .badge-live {
+    background: var(--theme-success-dim);
+    border-color: rgba(16,185,129,.3);
+    color: var(--theme-success);
+  }
+
+  .badge-live::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--theme-success);
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .badge-live::before { animation: none; }
+  }
+
+  .topbar-btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border: none;
+    transition: background 0.1s, box-shadow 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .topbar-btn { transition: none; }
+  }
+
+  .btn-publish {
+    background: var(--theme-success);
+    color: white;
+  }
+
+  .btn-publish:hover { background: #059669; }
+  .btn-publish:focus-visible { outline: 2px solid var(--theme-success); outline-offset: 2px; }
+  .btn-publish:active { background: #047857; }
+  .btn-publish:disabled { background: var(--surface-raised); color: var(--text-faint); cursor: not-allowed; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border-dark-strong);
+  }
+
+  .btn-outline:hover { background: var(--surface-raised); color: var(--text-bright); }
+  .btn-outline:focus-visible { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
+
+  /* ── Main content (two panels) ──────────────────── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── LEFT PANEL: Config ─────────────────────────── */
+  .panel-left {
+    width: 420px;
+    min-width: 360px;
+    background: var(--panel-l);
+    border-right: 1px solid var(--border-dark);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border-dark);
+    padding: 0 4px;
+    flex-shrink: 0;
+    background: #162032;
+  }
+
+  .tab {
+    height: 44px;
+    padding: 0 16px;
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.1s, border-color 0.1s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tab { transition: none; }
+  }
+
+  .tab:hover { color: var(--text-dim); }
+
+  .tab.active {
+    color: var(--text-bright);
+    border-bottom-color: var(--theme-primary);
+  }
+
+  .tab:focus-visible { outline: 2px solid var(--theme-primary); }
+
+  .tab-count {
+    background: var(--border-dark);
+    border-radius: 99px;
+    font-size: 10px;
+    padding: 1px 6px;
+    font-weight: 600;
+  }
+
+  /* Tab panels */
+  .tab-panel { display: none; flex-direction: column; flex: 1; overflow-y: auto; overflow-x: hidden; }
+  .tab-panel.active { display: flex; }
+
+  /* Scrollbar */
+  .tab-panel::-webkit-scrollbar { width: 6px; }
+  .tab-panel::-webkit-scrollbar-track { background: transparent; }
+  .tab-panel::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+
+  /* Config sections */
+  .config-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-dark);
+  }
+
+  .config-section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 12px;
+  }
+
+  .field-group { margin-bottom: 14px; }
+  .field-group:last-child { margin-bottom: 0; }
+
+  .field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .field-hint {
+    font-weight: 400;
+    color: var(--text-faint);
+    font-size: 10px;
+    margin-left: 6px;
+  }
+
+  .dark-input {
+    width: 100%;
+    height: 36px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    color: var(--text-bright);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dark-input { transition: none; }
+  }
+
+  .dark-input:hover { border-color: rgba(255,255,255,.2); }
+  .dark-input:focus { border-color: var(--theme-primary); box-shadow: 0 0 0 3px var(--theme-primary-glow); }
+  .dark-input::placeholder { color: var(--text-faint); }
+
+  .dark-input-wrap {
+    position: relative;
+  }
+
+  .input-suffix-dark {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: var(--text-faint);
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  textarea.dark-input {
+    height: auto;
+    min-height: 88px;
+    padding: 10px 12px;
+    resize: vertical;
+    line-height: 1.55;
+    font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+    font-size: 13px;
+  }
+
+  /* Template selector */
+  .template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .template-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    background: var(--input-bg);
+    cursor: pointer;
+    transition: border-color 0.1s, background 0.1s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .template-row { transition: none; }
+  }
+
+  .template-row:hover { border-color: rgba(255,255,255,.2); background: var(--surface-raised); }
+  .template-row:focus-visible { outline: 2px solid var(--theme-primary); }
+
+  .template-row.selected {
+    border-color: var(--theme-primary);
+    background: rgba(37,99,235,.1);
+  }
+
+  .template-icon-small {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .template-row.selected .template-icon-small { background: rgba(37,99,235,.15); }
+
+  .template-info { flex: 1; min-width: 0; }
+
+  .template-name-sm {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 1px;
+  }
+
+  .template-desc-sm {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: 'Noto Sans Thai', sans-serif;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .radio-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-dark-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.1s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .radio-dot { transition: none; }
+  }
+
+  .template-row.selected .radio-dot {
+    border-color: var(--theme-primary);
+    background: var(--theme-primary);
+  }
+
+  .template-row.selected .radio-dot::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: white;
+    display: block;
+  }
+
+  /* Toggle switch */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+
+  .toggle-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    background: var(--input-border);
+    transition: background 0.2s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toggle-track { transition: none; }
+  }
+
+  .toggle input:checked + .toggle-track { background: var(--theme-primary); }
+
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.2s;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toggle-thumb { transition: none; }
+  }
+
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+
+  .toggle:focus-within .toggle-track { box-shadow: 0 0 0 2px var(--theme-primary-glow); }
+
+  /* Knowledge badge */
+  .kb-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 6px;
+  }
+
+  .kb-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: rgba(37,99,235,.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .kb-name {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-bright);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .kb-size { font-size: 10px; color: var(--text-faint); white-space: nowrap; }
+
+  .kb-remove {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.1s, background 0.1s;
+    line-height: 1;
+  }
+
+  .kb-remove:hover { color: var(--theme-danger); background: rgba(239,68,68,.1); }
+  .kb-remove:focus-visible { outline: 2px solid var(--theme-danger); }
+
+  .add-btn {
+    height: 32px;
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--border-dark-strong);
+    border-radius: var(--radius-md);
+    color: var(--text-faint);
+    font-size: 12px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.1s, color 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .add-btn:hover { border-color: var(--theme-primary); color: var(--theme-primary); }
+  .add-btn:focus-visible { outline: 2px solid var(--theme-primary); }
+
+  /* LINE connect collapsible */
+  .collapsible-banner {
+    margin: 0;
+    border-top: 1px solid var(--border-dark);
+    flex-shrink: 0;
+  }
+
+  .collapsible-trigger {
+    width: 100%;
+    padding: 12px 20px;
+    background: rgba(245,158,11,.06);
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--theme-warning);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Noto Sans Thai', sans-serif;
+    text-align: left;
+    transition: background 0.1s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .collapsible-trigger { transition: none; }
+  }
+
+  .collapsible-trigger:hover { background: rgba(245,158,11,.1); }
+  .collapsible-trigger:focus-visible { outline: 2px solid var(--theme-warning); }
+
+  .collapsible-trigger-icon { font-size: 14px; flex-shrink: 0; }
+  .collapsible-trigger span { flex: 1; }
+
+  .expand-arrow {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text-faint);
+    transition: transform 0.2s;
+    font-style: normal;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .expand-arrow { transition: none; }
+  }
+
+  .collapsible-trigger[aria-expanded="true"] .expand-arrow { transform: rotate(180deg); }
+
+  .collapsible-body {
+    display: none;
+    padding: 16px 20px;
+    background: #15202E;
+  }
+
+  .collapsible-body.open { display: block; }
+
+  .line-dark-input {
+    width: 100%;
+    height: 36px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    color: var(--text-bright);
+    font-size: 12px;
+    font-family: 'Inter', monospace;
+    outline: none;
+    transition: border-color 0.12s;
+    margin-top: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line-dark-input { transition: none; }
+  }
+
+  .line-dark-input:focus { border-color: #06C755; box-shadow: 0 0 0 2px rgba(6,199,85,.15); }
+  .line-dark-label { font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 10px; display: block; }
+
+  .btn-connect-line {
+    height: 36px;
+    width: 100%;
+    background: #06C755;
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Noto Sans Thai', sans-serif;
+    cursor: pointer;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.1s;
+  }
+
+  .btn-connect-line:hover { background: #05B34A; }
+  .btn-connect-line:focus-visible { outline: 2px solid #06C755; outline-offset: 2px; }
+
+  .line-skip-text {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .line-skip-text a {
+    color: var(--text-dim);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .line-skip-text a:hover { color: var(--text-bright); text-decoration: underline; }
+
+  /* ── RIGHT PANEL: Phone mockup ──────────────────── */
+  .panel-right {
+    flex: 1;
+    background: var(--panel-r);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .panel-right-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-dark);
+    background: #0A1628;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--theme-success);
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+  }
+
+  .panel-right-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .panel-right-subtitle {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-left: auto;
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  /* Phone mockup */
+  .phone {
+    width: 280px;
+    background: var(--phone-shell);
+    border-radius: 40px;
+    padding: 10px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.08),
+      0 20px 60px rgba(0,0,0,.6),
+      inset 0 1px 0 rgba(255,255,255,.08);
+    flex-shrink: 0;
+    margin-top: 44px;
+  }
+
+  .phone-inner {
+    background: var(--phone-screen);
+    border-radius: 32px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 560px;
+  }
+
+  /* Status bar */
+  .phone-status {
+    height: 28px;
+    background: #06C755;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+    gap: 6px;
+  }
+
+  .phone-status-time { margin-right: auto; font-size: 9px; }
+
+  /* LINE header */
+  .phone-line-header {
+    height: 52px;
+    background: #06C755;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 10px;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+
+  .phone-back {
+    color: white;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1;
+    opacity: 0.9;
+    cursor: pointer;
+  }
+
+  .phone-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .phone-bot-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Noto Sans Thai', sans-serif;
+    flex: 1;
+  }
+
+  .phone-menu { color: white; font-size: 18px; opacity: 0.8; cursor: pointer; }
+
+  /* Chat area */
+  .phone-chat {
+    flex: 1;
+    background: #FAFAFA;
+    padding: 12px 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .phone-chat::-webkit-scrollbar { display: none; }
+
+  .date-divider {
+    text-align: center;
+    font-size: 10px;
+    color: #9CA3AF;
+    font-family: 'Inter', sans-serif;
+    margin: 4px 0;
+  }
+
+  .phone-msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .phone-msg.bot { align-self: flex-start; }
+  .phone-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .phone-msg-av {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid rgba(0,0,0,.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+  }
+
+  .phone-bubble {
+    max-width: 76%;
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.55;
+    font-family: 'Noto Sans Thai', sans-serif;
+  }
+
+  .phone-msg.bot .phone-bubble {
+    background: var(--line-bubble-bg);
+    color: #1F2937;
+    border-bottom-left-radius: 3px;
+  }
+
+  .phone-msg.user .phone-bubble {
+    background: var(--line-user-bg);
+    color: #1F2937;
+    border-bottom-right-radius: 3px;
+  }
+
+  .phone-time {
+    font-size: 9px;
+    color: #9CA3AF;
+    font-family: 'Inter', sans-serif;
+    padding: 0 2px 2px;
+    align-self: flex-end;
+  }
+
+  /* Phone input */
+  .phone-input-row {
+    height: 52px;
+    background: white;
+    border-top: 1px solid rgba(0,0,0,.1);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .phone-input-field {
+    flex: 1;
+    height: 36px;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 18px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    color: #1F2937;
+    background: #F8F8F8;
+    outline: none;
+  }
+
+  .phone-input-field:focus { border-color: #06C755; box-shadow: 0 0 0 2px rgba(6,199,85,.15); }
+
+  .phone-send {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #06C755;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .phone-send:hover { background: #05B34A; }
+  .phone-send:focus-visible { outline: 2px solid #06C755; }
+
+  /* Typing indicator in phone */
+  .phone-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    background: var(--line-bubble-bg);
+    border-radius: 16px;
+    border-bottom-left-radius: 3px;
+    width: fit-content;
+  }
+
+  .phone-typing span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #9CA3AF;
+    display: inline-block;
+    animation: bounce-sm 1.1s infinite ease-in-out;
+  }
+
+  .phone-typing span:nth-child(2) { animation-delay: 0.18s; }
+  .phone-typing span:nth-child(3) { animation-delay: 0.36s; }
+
+  @keyframes bounce-sm {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .phone-typing span { animation: none; }
+  }
+
+  /* ── Right panel tool sections ──────────────────── */
+  .right-prompt-label {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: 'Noto Sans Thai', sans-serif;
+    pointer-events: none;
+  }
+
+  /* ── Responsive ─────────────────────────────────── */
+  @media (max-width: 900px) {
+    html, body { overflow: auto; }
+    .app { height: auto; }
+    .main { flex-direction: column; }
+    .panel-left { width: 100%; min-width: 0; max-height: none; }
+    .panel-right { min-height: 600px; }
+    .phone { margin-top: 44px; }
+  }
+
+  @media (max-width: 480px) {
+    .panel-right { padding: 12px; }
+    .phone { width: 260px; }
+    .phone-inner { height: 520px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Topbar ── -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon">C</div>
+      CustomerOS
+    </div>
+    <div class="topbar-divider" aria-hidden="true"></div>
+    <div class="topbar-path">
+      <span>ร้านกาแฟดอยช้าง</span>
+      <span class="path-sep">›</span>
+      <span class="path-current">สร้างบอทแรก</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-badge badge-draft" role="status">แบบร่าง</div>
+      <button class="topbar-btn btn-outline" type="button">บันทึก</button>
+      <button class="topbar-btn btn-publish" type="button">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        เผยแพร่บอท
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main split ── -->
+  <div class="main">
+
+    <!-- LEFT: Config panel -->
+    <aside class="panel-left" aria-label="ตั้งค่าบอท">
+
+      <!-- Tabs -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab active" role="tab" aria-selected="true" id="tab-basic" onclick="switchTab('basic')">
+          พื้นฐาน
+        </button>
+        <button class="tab" role="tab" aria-selected="false" id="tab-kb" onclick="switchTab('kb')">
+          ความรู้
+          <span class="tab-count">2</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" id="tab-channel" onclick="switchTab('channel')">
+          ช่องทาง
+        </button>
+      </div>
+
+      <!-- Tab: พื้นฐาน -->
+      <div class="tab-panel active" id="panel-basic" role="tabpanel" aria-labelledby="tab-basic">
+
+        <div class="config-section">
+          <div class="section-label">ข้อมูลบอท</div>
+
+          <div class="field-group">
+            <label class="field-label" for="bot-name-c">ชื่อบอท <span class="field-hint">ไม่เกิน 30 ตัว</span></label>
+            <div class="dark-input-wrap">
+              <input class="dark-input" id="bot-name-c" type="text" value="น้องกาแฟ" maxlength="30" style="padding-right: 52px;" />
+              <span class="input-suffix-dark">5/30</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="template-select">Template</label>
+            <div class="template-list" role="radiogroup" aria-label="เลือก template">
+              <div class="template-row selected" tabindex="0" role="radio" aria-checked="true">
+                <div class="template-icon-small">🛒</div>
+                <div class="template-info">
+                  <div class="template-name-sm">Sales Bot</div>
+                  <div class="template-desc-sm">ขายสินค้า ปิดการขาย ตอบราคา</div>
+                </div>
+                <div class="radio-dot"></div>
+              </div>
+              <div class="template-row" tabindex="0" role="radio" aria-checked="false">
+                <div class="template-icon-small">🎧</div>
+                <div class="template-info">
+                  <div class="template-name-sm">Support Bot</div>
+                  <div class="template-desc-sm">ตอบหลังการขาย ส่งต่อทีมงาน</div>
+                </div>
+                <div class="radio-dot"></div>
+              </div>
+              <div class="template-row" tabindex="0" role="radio" aria-checked="false">
+                <div class="template-icon-small">📅</div>
+                <div class="template-info">
+                  <div class="template-name-sm">Appointment Bot</div>
+                  <div class="template-desc-sm">จองคิว นัดหมาย จัดเวลา</div>
+                </div>
+                <div class="radio-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <div class="section-label">คำทักทายและ Persona</div>
+
+          <div class="field-group">
+            <label class="field-label" for="greeting-c">ข้อความทักทาย</label>
+            <textarea class="dark-input" id="greeting-c" rows="3">สวัสดีค่ะ สนใจสินค้าหรือแพ็กเกจไหน แจ้งได้เลยนะคะ เดี๋ยวช่วยแนะนำให้ตรงความต้องการค่ะ</textarea>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="instructions-c">คำสั่งพิเศษ <span class="field-hint">optional</span></label>
+            <textarea class="dark-input" id="instructions-c" rows="3" placeholder="เช่น: ตอบภาษาไทยเท่านั้น, อย่าบอกราคาจนกว่าจะถาม, แนะนำเมนูร้อนก่อนเมนูเย็นเสมอ..."></textarea>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <div class="section-label">AI Model</div>
+          <div class="field-group">
+            <label class="field-label" for="model-select">โมเดล</label>
+            <select class="dark-input" id="model-select" style="cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;">
+              <option>Auto (แนะนำ)</option>
+              <option>Groq Llama 3.1</option>
+              <option>Gemini 2.0 Flash</option>
+              <option>Nemotron</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <div class="section-label">ตัวเลือก</div>
+          <div class="toggle-row">
+            <span class="toggle-label">ตอบอัตโนมัติ (Auto-reply)</span>
+            <label class="toggle" aria-label="เปิดปิด auto-reply">
+              <input type="checkbox" checked />
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">ส่งคาร์ดสินค้า</span>
+            <label class="toggle" aria-label="เปิดปิดการส่งคาร์ดสินค้า">
+              <input type="checkbox" checked />
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">ส่งต่อทีมงาน (Human Handoff)</span>
+            <label class="toggle" aria-label="เปิดปิด human handoff">
+              <input type="checkbox" />
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+        </div>
+
+      </div><!-- panel-basic -->
+
+      <!-- Tab: Knowledge -->
+      <div class="tab-panel" id="panel-kb" role="tabpanel" aria-labelledby="tab-kb">
+        <div class="config-section">
+          <div class="section-label">Knowledge Base ที่เชื่อมไว้</div>
+
+          <div class="kb-item">
+            <div class="kb-icon">📄</div>
+            <div class="kb-name">เมนูกาแฟดอยช้าง 2026.pdf</div>
+            <div class="kb-size">48 KB</div>
+            <button class="kb-remove" type="button" aria-label="ลบ">×</button>
+          </div>
+
+          <div class="kb-item">
+            <div class="kb-icon">📋</div>
+            <div class="kb-name">โปรโมชั่นและราคา</div>
+            <div class="kb-size">3.2 KB</div>
+            <button class="kb-remove" type="button" aria-label="ลบ">×</button>
+          </div>
+
+          <button class="add-btn" type="button" style="margin-top: 8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            เพิ่มเอกสาร / URL
+          </button>
+        </div>
+
+        <div class="config-section">
+          <div class="section-label">สินค้าที่เชื่อมไว้</div>
+          <div style="font-size: 12px; color: var(--text-faint); font-family: 'Noto Sans Thai'; margin-bottom: 10px;">0 สินค้า — บอทจะแนะนำสินค้าจาก catalog เมื่อลูกค้าถาม</div>
+          <button class="add-btn" type="button">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            เพิ่มสินค้าจาก Catalog
+          </button>
+        </div>
+      </div><!-- panel-kb -->
+
+      <!-- Tab: Channel -->
+      <div class="tab-panel" id="panel-channel" role="tabpanel" aria-labelledby="tab-channel">
+        <div class="config-section">
+          <div class="section-label">ช่องทางที่เชื่อมอยู่</div>
+          <div style="font-size: 12px; color: var(--text-faint); font-family: 'Noto Sans Thai'; text-align: center; padding: 24px 0; line-height: 1.8;">
+            ยังไม่ได้เชื่อมต่อช่องทางใด<br>เชื่อม LINE OA ด้านล่างเพื่อรับข้อความจริง
+          </div>
+        </div>
+      </div><!-- panel-channel -->
+
+      <!-- LINE connect collapsible (bottom of left panel) -->
+      <div class="collapsible-banner">
+        <button
+          class="collapsible-trigger"
+          type="button"
+          aria-expanded="false"
+          aria-controls="line-body"
+          onclick="toggleCollapsible(this)"
+        >
+          <span class="collapsible-trigger-icon">⚡</span>
+          <span>ยังไม่ได้เชื่อม LINE OA — เชื่อมเพื่อรับข้อความจริง</span>
+          <em class="expand-arrow">▾</em>
+        </button>
+        <div class="collapsible-body" id="line-body" role="region">
+          <div style="font-size: 11px; color: var(--text-dim); font-family: 'Noto Sans Thai'; margin-bottom: 12px; line-height: 1.65;">
+            วาง Channel Access Token และ Channel Secret จาก <a href="#" style="color: #06C755; text-decoration: none; font-weight: 500;">LINE Developers Console ↗</a>
+          </div>
+
+          <label class="line-dark-label" for="line-token-c">Channel Access Token</label>
+          <input class="line-dark-input" id="line-token-c" type="password" placeholder="eyJhbGciOiJIUzI1NiJ9.TUx2..." />
+
+          <label class="line-dark-label" for="line-secret-c">Channel Secret</label>
+          <input class="line-dark-input" id="line-secret-c" type="password" placeholder="a1b2c3d4e5f6..." />
+
+          <div style="margin-top: 10px; font-size: 11px; color: var(--text-faint); font-family: 'Noto Sans Thai';">
+            Webhook URL:
+            <span style="font-family: 'Inter', monospace; color: var(--text-dim); font-size: 10px;">https://app.customeros.ai/api/v1/webhook/ri9k2mf4</span>
+          </div>
+
+          <button class="btn-connect-line" type="button">
+            เชื่อมต่อ LINE Official Account
+          </button>
+          <div class="line-skip-text">หรือ <a href="#">เชื่อมทีหลัง</a> — บอทยังทดสอบในระบบได้</div>
+        </div>
+      </div>
+
+    </aside><!-- panel-left -->
+
+    <!-- RIGHT: Phone preview -->
+    <section class="panel-right" aria-label="ตัวอย่างบอทใน LINE">
+      <div class="panel-right-header">
+        <div class="live-dot" role="status" aria-label="สถานะ: ทดสอบสด"></div>
+        <div class="panel-right-label">ทดสอบสด</div>
+        <div class="panel-right-subtitle">พิมพ์ในโทรศัพท์เพื่อทดสอบ — ยังไม่ได้เชื่อม LINE จริง</div>
+      </div>
+
+      <!-- Phone shell -->
+      <div class="phone" role="img" aria-label="ตัวอย่างบทสนทนาใน LINE">
+        <div class="phone-inner">
+
+          <!-- Status bar -->
+          <div class="phone-status">
+            <span class="phone-status-time">10:32</span>
+            <span>LTE</span>
+            <span>🔋</span>
+          </div>
+
+          <!-- LINE header -->
+          <div class="phone-line-header">
+            <div class="phone-back">&lt;</div>
+            <div class="phone-avatar">☕</div>
+            <div class="phone-bot-name">น้องกาแฟ</div>
+            <div class="phone-menu">⋮</div>
+          </div>
+
+          <!-- Chat -->
+          <div class="phone-chat" id="phone-chat" role="log" aria-live="polite">
+            <div class="date-divider">วันนี้</div>
+
+            <div class="phone-msg bot">
+              <div class="phone-msg-av">☕</div>
+              <div>
+                <div class="phone-bubble">สวัสดีค่ะ สนใจสินค้าหรือแพ็กเกจไหน แจ้งได้เลยนะคะ เดี๋ยวช่วยแนะนำให้ตรงความต้องการค่ะ</div>
+                <div class="phone-time">10:30</div>
+              </div>
+            </div>
+
+            <div class="phone-msg user">
+              <div>
+                <div class="phone-bubble">มีเมนูแนะนำอะไรบ้าง</div>
+                <div class="phone-time" style="text-align:right;">10:31</div>
+              </div>
+            </div>
+
+            <div class="phone-msg bot">
+              <div class="phone-msg-av">☕</div>
+              <div>
+                <div class="phone-bubble">แนะนำ Signature Blend Latte ค่ะ ราคา 85฿ หรือถ้าชอบเย็นๆ Cold Brew ของเราก็อร่อยมากค่ะ สนใจแบบไหนคะ?</div>
+                <div class="phone-time">10:31</div>
+              </div>
+            </div>
+
+            <div class="phone-msg bot">
+              <div class="phone-msg-av">☕</div>
+              <div class="phone-typing" aria-label="กำลังพิมพ์...">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+          </div><!-- phone-chat -->
+
+          <!-- Input row -->
+          <div class="phone-input-row">
+            <input class="phone-input-field" type="text" placeholder="ลองพิมพ์เพื่อทดสอบ..." aria-label="ข้อความทดสอบ" />
+            <button class="phone-send" type="button" aria-label="ส่ง" onclick="sendTestMsg(this)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+
+        </div><!-- phone-inner -->
+      </div><!-- .phone -->
+
+      <div class="right-prompt-label">ตัวอย่างในโหมด Preview — เชื่อม LINE เพื่อทดสอบข้อความจริง</div>
+
+    </section><!-- panel-right -->
+
+  </div><!-- .main -->
+</div><!-- .app -->
+
+<script>
+  function switchTab(name) {
+    // Tabs
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
+    const activeTab = document.getElementById('tab-' + name);
+    if (activeTab) { activeTab.classList.add('active'); activeTab.setAttribute('aria-selected', 'true'); }
+    // Panels
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const activePanel = document.getElementById('panel-' + name);
+    if (activePanel) activePanel.classList.add('active');
+  }
+
+  function toggleCollapsible(btn) {
+    const bodyId = btn.getAttribute('aria-controls');
+    const body = document.getElementById(bodyId);
+    const isOpen = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!isOpen));
+    body.classList.toggle('open', !isOpen);
+  }
+
+  function sendTestMsg(btn) {
+    const inputRow = btn.closest('.phone-input-row');
+    const input = inputRow.querySelector('input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const chat = document.getElementById('phone-chat');
+
+    // Remove typing bubble if present
+    const typing = chat.querySelector('.phone-typing');
+    const typingRow = typing ? typing.closest('.phone-msg') : null;
+    if (typingRow) typingRow.remove();
+
+    // User message
+    const userMsg = document.createElement('div');
+    userMsg.className = 'phone-msg user';
+    userMsg.innerHTML = '<div><div class="phone-bubble">' + escHtml(text) + '</div><div class="phone-time" style="text-align:right;">เดี๋ยวนี้</div></div>';
+    chat.appendChild(userMsg);
+
+    input.value = '';
+
+    // Bot typing
+    const typingMsg = document.createElement('div');
+    typingMsg.className = 'phone-msg bot';
+    typingMsg.innerHTML = '<div class="phone-msg-av">☕</div><div class="phone-typing" aria-label="กำลังพิมพ์..."><span></span><span></span><span></span></div>';
+    chat.appendChild(typingMsg);
+    chat.scrollTop = chat.scrollHeight;
+
+    // Bot reply
+    setTimeout(() => {
+      typingMsg.remove();
+      const botMsg = document.createElement('div');
+      botMsg.className = 'phone-msg bot';
+      botMsg.innerHTML = '<div class="phone-msg-av">☕</div><div><div class="phone-bubble">ขอบคุณที่ถามนะคะ ลูกค้าสามารถดูเมนูเพิ่มเติมหรือสั่งได้เลยค่ะ มีอะไรให้น้องช่วยอีกไหมคะ?</div><div class="phone-time">เดี๋ยวนี้</div></div>';
+      chat.appendChild(botMsg);
+      chat.scrollTop = chat.scrollHeight;
+    }, 1200);
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
